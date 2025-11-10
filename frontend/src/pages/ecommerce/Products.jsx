@@ -441,7 +441,7 @@ const Products = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <button 
             onClick={handleOpenGoogleForm}
-            className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-4 rounded-2xl font-bold text-sm md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-3"
+            className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-4 rounded-2xl font-bold text-sm md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-1.5"
           >
             <span>Get Customized Diet Plan</span>
             <ArrowRight size={20} />
