@@ -3,7 +3,116 @@ import Order from "../models/Order.js";
 import { sendEmail } from "../utils/sendEmail.js";
 
 
-// ✅ Get all orders with complete details
+// controllers/orderController.js
+
+// Updated Place Order - Include deliveryDate
+export const placeOrder = async (req, res) => {
+  const { 
+    name, 
+    phone, 
+    email, 
+    address, 
+    wantsOffers, 
+    products, 
+    totalPrice, 
+    deliveryPoint,
+    deliveryCharge,
+    deliveryDate  // Add this
+  } = req.body;
+
+  // Validate required fields - add deliveryDate
+  if (!name || !phone || !products || !totalPrice || !address || !deliveryPoint || !deliveryDate) {
+    return res.status(400).json({ 
+      message: "All required fields must be filled: name, phone, products, totalPrice, address, deliveryPoint, deliveryDate" 
+    });
+  }
+
+  // Validate delivery date
+  const selectedDate = new Date(deliveryDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (selectedDate <= today) {
+    return res.status(400).json({ 
+      message: "Delivery date must be from tomorrow onwards" 
+    });
+  }
+
+  if (wantsOffers && !email) {
+    return res.status(400).json({ 
+      message: "Email is required if customer wants offers details" 
+    });
+  }
+
+  if (!/^\d{10}$/.test(phone)) {
+    return res.status(400).json({ 
+      message: "Phone number must be exactly 10 digits" 
+    });
+  }
+
+  // Validate delivery point
+  const validDeliveryPoints = ["point_a", "point_b", "point_c", "home_delivery"];
+  if (!validDeliveryPoints.includes(deliveryPoint)) {
+    return res.status(400).json({ 
+      message: `Invalid delivery point. Must be one of: ${validDeliveryPoints.join(", ")}` 
+    });
+  }
+
+  try {
+    // Create customer
+    const customer = await Customer.create({ 
+      name, 
+      phone, 
+      email, 
+      address, 
+      wantsOffers 
+    });
+
+    // Create order - include deliveryDate
+    const order = await Order.create({
+      customerId: customer.id,
+      products,
+      totalPrice: Math.round(totalPrice),
+      deliveryAddress: address,
+      deliveryPoint,
+      deliveryCharge: deliveryCharge || 0,
+      deliveryDate: deliveryDate, // Add this
+      paymentMethod: "whatsapp",
+      paymentStatus: "pending",
+      transactionId: `ORD_${Date.now()}`,
+    });
+
+    // Return consistent response - include deliveryDate
+    res.status(201).json({ 
+      message: "Order placed successfully", 
+      order: {
+        id: order.id,
+        customerId: order.customerId,
+        products: order.products,
+        totalPrice: order.totalPrice,
+        deliveryAddress: order.deliveryAddress,
+        deliveryPoint: order.deliveryPoint,
+        deliveryCharge: order.deliveryCharge,
+        deliveryDate: order.deliveryDate, // Add this
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+        transactionId: order.transactionId,
+        status: order.status,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt
+      }
+    });
+
+  } catch (err) {
+    console.error("Order placement error:", err);
+    res.status(500).json({ 
+      message: "Failed to place order", 
+      error: err.message 
+    });
+  }
+};
+
+// Update getOrders to include deliveryDate in attributes
 export const getOrders = async (req, res) => {
   try {
     const orders = await Order.findAll({
@@ -11,7 +120,7 @@ export const getOrders = async (req, res) => {
         model: Customer, 
         attributes: ["id", "name", "phone", "email", "address", "wantsOffers", "message", "createdAt", "updatedAt"] 
       },
-      attributes: ["id", "products", "totalPrice", "deliveryAddress", "status", "paymentMethod", "paymentStatus", "transactionId", "createdAt", "updatedAt", "customerId"]
+      attributes: ["id", "products", "totalPrice", "deliveryAddress", "deliveryDate", "status", "paymentMethod", "paymentStatus", "transactionId", "createdAt", "updatedAt", "customerId"] // Add deliveryDate
     });
     res.status(200).json(orders);
   } catch (err) {
@@ -60,97 +169,7 @@ export const deleteOrder = async (req, res) => {
 
 
 // Updated Place Order - No payment processing
-export const placeOrder = async (req, res) => {
-  const { 
-    name, 
-    phone, 
-    email, 
-    address, 
-    wantsOffers, 
-    products, 
-    totalPrice, 
-    deliveryPoint,
-    deliveryCharge
-  } = req.body;
 
-  // Validate required fields
-  if (!name || !phone || !products || !totalPrice || !address || !deliveryPoint) {
-    return res.status(400).json({ 
-      message: "All required fields must be filled: name, phone, products, totalPrice, address, deliveryPoint" 
-    });
-  }
-
-  if (wantsOffers && !email) {
-    return res.status(400).json({ 
-      message: "Email is required if customer wants offers details" 
-    });
-  }
-
-  if (!/^\d{10}$/.test(phone)) {
-    return res.status(400).json({ 
-      message: "Phone number must be exactly 10 digits" 
-    });
-  }
-
-  // Validate delivery point
-  const validDeliveryPoints = ["point_a", "point_b", "point_c", "home_delivery"];
-  if (!validDeliveryPoints.includes(deliveryPoint)) {
-    return res.status(400).json({ 
-      message: `Invalid delivery point. Must be one of: ${validDeliveryPoints.join(", ")}` 
-    });
-  }
-
-  try {
-    // Create customer
-    const customer = await Customer.create({ 
-      name, 
-      phone, 
-      email, 
-      address, 
-      wantsOffers 
-    });
-
-    // Create order - payment status starts as 'pending'
-    const order = await Order.create({
-      customerId: customer.id,
-      products,
-      totalPrice: Math.round(totalPrice),
-      deliveryAddress: address,
-      deliveryPoint,
-      deliveryCharge: deliveryCharge || 0,
-      paymentMethod: "whatsapp", // Changed to whatsapp
-      paymentStatus: "pending", // Starts as pending
-      transactionId: `ORD_${Date.now()}`,
-    });
-
-    // Return consistent response
-    res.status(201).json({ 
-      message: "Order placed successfully", 
-      order: {
-        id: order.id,
-        customerId: order.customerId,
-        products: order.products,
-        totalPrice: order.totalPrice,
-        deliveryAddress: order.deliveryAddress,
-        deliveryPoint: order.deliveryPoint,
-        deliveryCharge: order.deliveryCharge,
-        paymentMethod: order.paymentMethod,
-        paymentStatus: order.paymentStatus,
-        transactionId: order.transactionId,
-        status: order.status,
-        createdAt: order.createdAt,
-        updatedAt: order.updatedAt
-      }
-    });
-
-  } catch (err) {
-    console.error("Order placement error:", err);
-    res.status(500).json({ 
-      message: "Failed to place order", 
-      error: err.message 
-    });
-  }
-};
 
 // In your orderController.js
 export const updatePaymentStatus = async (req, res) => {

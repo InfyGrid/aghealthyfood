@@ -2,6 +2,7 @@ import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 import Customer from "./Customer.js";
 
+// models/Order.js
 const Order = sequelize.define("Order", {
   products: {
     type: DataTypes.JSONB,
@@ -22,6 +23,10 @@ const Order = sequelize.define("Order", {
   deliveryCharge: {
     type: DataTypes.INTEGER,
     defaultValue: 0,
+  },
+  deliveryDate: {
+    type: DataTypes.DATE,
+    allowNull: false,
   },
   status: {
     type: DataTypes.ENUM("order taken", "order shipped", "order delivered"),

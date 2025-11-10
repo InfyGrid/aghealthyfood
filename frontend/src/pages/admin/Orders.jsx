@@ -18,6 +18,7 @@ import {
   Home,
   Building,
   MessageCircle,
+  Clock
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosConfig";
 import Swal from "sweetalert2";
@@ -165,6 +166,7 @@ const Orders = () => {
     }).join('\n');
 
     const whatsappNumber = order.Customer?.phone;
+    const deliveryDateFormatted = order.deliveryDate ? formatDeliveryDate(order.deliveryDate) : 'To be confirmed';
     
     if (!whatsappNumber) {
       Swal.fire({
@@ -176,7 +178,7 @@ const Orders = () => {
     }
 
     const message = encodeURIComponent(
-      `Hello ${order.Customer?.name},\n\nYour order from AG's Healthy Food is confirmed!\n\n📦 *Order Details:*\n${productDetails}\n\n💰 *Total Amount: ₹${order.totalPrice}*\n📍 *Delivery Address:* ${order.deliveryAddress}\n\n💳 *Payment Instructions:*\nPlease send payment of ₹${order.totalPrice} to ${WHATSAPP_NUMBER} and share the payment screenshot for confirmation.\n\nOnce we verify your payment, we'll process your order for delivery.`
+      `Hello ${order.Customer?.name},\n\nYour order from AG's Healthy Food is confirmed!\n\n📦 *Order Details:*\n${productDetails}\n\n💰 *Total Amount: ₹${order.totalPrice}*\n📍 *Delivery Address:* ${order.deliveryAddress}\n📅 *Delivery Date:* ${deliveryDateFormatted}\n\n💳 *Payment Instructions:*\nPlease send payment of ₹${order.totalPrice} to ${WHATSAPP_NUMBER} and share the payment screenshot for confirmation.\n\nOnce we verify your payment, we'll process your order for delivery.`
     );
 
     window.open(`https://wa.me/91${whatsappNumber}?text=${message}`, '_blank');
@@ -185,6 +187,7 @@ const Orders = () => {
   // ✅ Open WhatsApp with payment confirmation message
   const sendPaymentConfirmation = (order) => {
     const whatsappNumber = order.Customer?.phone;
+    const deliveryDateFormatted = order.deliveryDate ? formatDeliveryDate(order.deliveryDate) : 'To be confirmed';
     
     if (!whatsappNumber) {
       Swal.fire({
@@ -196,7 +199,7 @@ const Orders = () => {
     }
 
     const message = encodeURIComponent(
-      `Hello ${order.Customer?.name},\n\nThank you for your payment! Your payment of ₹${order.totalPrice} has been verified.\n\nYour order has been confirmed and will be delivered to:\n${order.deliveryAddress}\n\nWe'll notify you when your order is out for delivery. Thank you for choosing AG's Healthy Food! 🥗`
+      `Hello ${order.Customer?.name},\n\nThank you for your payment! Your payment of ₹${order.totalPrice} has been verified.\n\nYour order has been confirmed and will be delivered to:\n${order.deliveryAddress}\n📅 *Delivery Date:* ${deliveryDateFormatted}\n\nWe'll notify you when your order is out for delivery. Thank you for choosing AG's Healthy Food! 🥗`
     );
 
     window.open(`https://wa.me/91${whatsappNumber}?text=${message}`, '_blank');
@@ -205,6 +208,7 @@ const Orders = () => {
   // ✅ Open WhatsApp with order taken message
   const sendOrderTakenMessage = (order) => {
     const whatsappNumber = order.Customer?.phone;
+    const deliveryDateFormatted = order.deliveryDate ? formatDeliveryDate(order.deliveryDate) : 'To be confirmed';
     
     if (!whatsappNumber) {
       Swal.fire({
@@ -216,7 +220,7 @@ const Orders = () => {
     }
 
     const message = encodeURIComponent(
-      `Hello ${order.Customer?.name},\n\nYour order has been taken and we're preparing it for you! 🎉\n\nWe'll deliver it to:\n${order.deliveryAddress}\n\nThank you for choosing AG's Healthy Food!`
+      `Hello ${order.Customer?.name},\n\nYour order has been taken and we're preparing it for you! 🎉\n\nWe'll deliver it to:\n${order.deliveryAddress}\n📅 *Delivery Date:* ${deliveryDateFormatted}\n\nThank you for choosing AG's Healthy Food!`
     );
 
     window.open(`https://wa.me/91${whatsappNumber}?text=${message}`, '_blank');
@@ -225,6 +229,7 @@ const Orders = () => {
   // ✅ Open WhatsApp with order shipped message
   const sendOrderShippedMessage = (order) => {
     const whatsappNumber = order.Customer?.phone;
+    const deliveryDateFormatted = order.deliveryDate ? formatDeliveryDate(order.deliveryDate) : 'To be confirmed';
     
     if (!whatsappNumber) {
       Swal.fire({
@@ -236,7 +241,7 @@ const Orders = () => {
     }
 
     const message = encodeURIComponent(
-      `Hello ${order.Customer?.name},\n\nGreat news! Your order is out for delivery! 🚚\n\nIt should reach you shortly at:\n${order.deliveryAddress}\n\nThank you for choosing AG's Healthy Food!`
+      `Hello ${order.Customer?.name},\n\nGreat news! Your order is out for delivery! 🚚\n\nIt should reach you shortly at:\n${order.deliveryAddress}\n📅 *Delivery Date:* ${deliveryDateFormatted}\n\nThank you for choosing AG's Healthy Food!`
     );
 
     window.open(`https://wa.me/91${whatsappNumber}?text=${message}`, '_blank');
@@ -307,6 +312,39 @@ const Orders = () => {
     });
   };
 
+  // Format delivery date function
+  const formatDeliveryDate = (dateString) => {
+    if (!dateString) return 'Not set';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  // Get delivery date status
+  const getDeliveryDateStatus = (deliveryDate) => {
+    if (!deliveryDate) return { status: 'not-set', color: 'bg-gray-100 text-gray-800', text: 'Not Set' };
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const delivery = new Date(deliveryDate);
+    delivery.setHours(0, 0, 0, 0);
+    
+    const diffTime = delivery - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return { status: 'today', color: 'bg-red-100 text-red-800', text: 'Today' };
+    if (diffDays === 1) return { status: 'tomorrow', color: 'bg-orange-100 text-orange-800', text: 'Tomorrow' };
+    if (diffDays > 1 && diffDays <= 3) return { status: 'upcoming', color: 'bg-blue-100 text-blue-800', text: `${diffDays} days` };
+    if (diffDays > 3) return { status: 'future', color: 'bg-green-100 text-green-800', text: `${diffDays} days` };
+    if (diffDays < 0) return { status: 'past', color: 'bg-gray-100 text-gray-800', text: 'Past Date' };
+    
+    return { status: 'unknown', color: 'bg-gray-100 text-gray-800', text: 'Unknown' };
+  };
+
   // Get payment status color
   const getPaymentStatusColor = (status) => {
     switch (status) {
@@ -341,9 +379,6 @@ const Orders = () => {
           <h1 className="text-2xl font-semibold text-gray-800">Orders</h1>
           <p className="text-gray-500">Manage all customer orders.</p>
         </div>
-        {/* <div className="text-sm text-gray-600">
-          Total Orders: <span className="font-bold text-green-600">{orders.length}</span>
-        </div> */}
       </div>
 
       {loading ? (
@@ -375,6 +410,8 @@ const Orders = () => {
               name: order.deliveryPoint, 
               icon: <MapPin size={14} /> 
             };
+
+            const deliveryDateStatus = getDeliveryDateStatus(order.deliveryDate);
 
             return (
               <motion.div
@@ -422,11 +459,11 @@ const Orders = () => {
                         {order.paymentMethod === 'upi' ? 'UPI' : 'WhatsApp'} • {order.paymentStatus}
                       </span>
 
-                      {/* Delivery Point */}
-                      {/* <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1">
-                        {deliveryPoint.icon}
-                        {deliveryPoint.name}
-                      </span> */}
+                      {/* Delivery Date Status */}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${deliveryDateStatus.color}`}>
+                        <Calendar size={12} />
+                        {order.deliveryDate ? formatDeliveryDate(order.deliveryDate) : 'Not Set'} • {deliveryDateStatus.text}
+                      </span>
 
                       {/* Delivery Charge */}
                       {order.deliveryCharge > 0 && (
@@ -438,8 +475,6 @@ const Orders = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                     
-
                       {/* Delete Button */}
                       <button
                         onClick={(e) => {
@@ -489,6 +524,13 @@ const Orders = () => {
                             <div className="flex justify-between">
                               <span className="text-gray-600">Last Updated:</span>
                               <span className="font-medium">{formatDate(order.updatedAt)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Delivery Date:</span>
+                              <span className={`font-medium flex items-center gap-1 ${deliveryDateStatus.color.replace('bg-', 'text-').split(' ')[0]}`}>
+                                <Calendar size={12} />
+                                {order.deliveryDate ? formatDeliveryDate(order.deliveryDate) : 'Not Set'}
+                              </span>
                             </div>
                             {order.transactionId && (
                               <div className="flex justify-between">
@@ -572,6 +614,13 @@ const Orders = () => {
                               <span className="font-medium flex items-center gap-1">
                                 {deliveryPoint.icon}
                                 {deliveryPoint.name}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Date:</span>
+                              <span className="font-medium text-purple-600 flex items-center gap-1">
+                                <Calendar size={12} />
+                                {order.deliveryDate ? formatDeliveryDate(order.deliveryDate) : 'Not set'}
                               </span>
                             </div>
                             <div className="flex justify-between">
@@ -667,7 +716,13 @@ const Orders = () => {
                           >
                             {order.deliveryAddress}
                           </a>
-                          <p className="text-xs text-gray-500">
+                          <div className="flex items-center gap-2 mt-2">
+                            <Calendar size={14} className="text-purple-600" />
+                            <span className="text-sm text-purple-600 font-medium">
+                              Scheduled for: {order.deliveryDate ? formatDeliveryDate(order.deliveryDate) : 'Not set'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
                             Click address to open in Google Maps
                           </p>
                         </div>
@@ -863,6 +918,14 @@ const Orders = () => {
                           <p className="text-xs text-gray-500 mt-1">
                             Includes all products {order.deliveryCharge > 0 && `+ ₹${order.deliveryCharge} delivery`}
                           </p>
+                          {order.deliveryDate && (
+                            <div className="flex items-center gap-1 mt-2">
+                              <Clock size={14} className="text-purple-600" />
+                              <span className="text-xs text-purple-600 font-medium">
+                                Delivery: {formatDeliveryDate(order.deliveryDate)}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </motion.div>

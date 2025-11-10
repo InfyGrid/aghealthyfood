@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Minus, Plus, Trash2, MapPin, MessageCircle, Upload, ChevronLeft, ChevronRight } from "lucide-react";
+import { Minus, Plus, Trash2, MapPin, MessageCircle, Calendar } from "lucide-react";
 import axiosInstance from "../../utils/axiosConfig";
 import Swal from "sweetalert2";
 
@@ -17,6 +17,7 @@ export default function Cart() {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [selectedDeliveryPoint, setSelectedDeliveryPoint] = useState("");
   const [deliveryCharge, setDeliveryCharge] = useState(0);
+  const [deliveryDate, setDeliveryDate] = useState("");
 
   // Delivery points configuration
   const DELIVERY_POINTS = [
@@ -32,6 +33,10 @@ export default function Cart() {
   useEffect(() => {
     const stored = JSON.parse(sessionStorage.getItem("cartItems")) || [];
     setCartItems(stored);
+    
+    // Set default delivery date to today
+    const today = new Date();
+    setDeliveryDate(today.toISOString().split('T')[0]);
   }, []);
 
   const updateCart = (updated) => {
@@ -64,8 +69,32 @@ export default function Cart() {
     setDeliveryCharge(point?.freeDelivery ? 0 : (point?.charge || 0));
   };
 
-  // Slider steps for the SweetAlert
-  const getSliderSteps = (orderId, total, selectedPoint) => {
+  // Get minimum date (today)
+  const getMinDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  // Get maximum date (30 days from now)
+  const getMaxDate = () => {
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 30);
+    return maxDate.toISOString().split('T')[0];
+  };
+
+  // Format date for display
+  const formatDeliveryDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  // Slider steps for the SweetAlert (updated to include delivery date)
+  const getSliderSteps = (orderId, total, selectedPoint, deliveryDate) => {
     return [
       {
         title: "Order Confirmed!",
@@ -78,6 +107,7 @@ export default function Cart() {
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p class="text-blue-800 font-semibold">Order ID: <span class="font-mono">${orderId}</span></p>
               <p class="text-blue-800 font-semibold mt-2">Total Amount: <span class="text-green-600">₹${total}</span></p>
+              <p class="text-blue-800 font-semibold mt-1">Delivery Date: <span class="text-purple-600">${formatDeliveryDate(deliveryDate)}</span></p>
             </div>
           </div>
         `
@@ -138,6 +168,10 @@ export default function Cart() {
                   <span>Delivery Point:</span>
                   <span>${selectedPoint.name}</span>
                 </div>
+                <div class="flex justify-between">
+                  <span>Delivery Date:</span>
+                  <span class="text-purple-600 font-semibold">${formatDeliveryDate(deliveryDate)}</span>
+                </div>
                 <div class="border-t pt-2 mt-2">
                   <div class="flex justify-between font-semibold">
                     <span>Total Amount:</span>
@@ -170,12 +204,12 @@ export default function Cart() {
   };
 
   const placeOrder = async () => {
-    // Validate required fields
-    if (!customer.name || !customer.phone || !selectedDeliveryPoint) {
+    // Validate required fields - add deliveryDate
+    if (!customer.name || !customer.phone || !selectedDeliveryPoint || !deliveryDate) {
       await Swal.fire({
         icon: "warning",
         title: "Incomplete Details",
-        text: "Please fill name, phone, and select delivery point to place order.",
+        text: "Please fill name, phone, select delivery point, and choose delivery date to place order.",
         confirmButtonColor: "#FF9800",
       });
       return;
@@ -227,6 +261,7 @@ export default function Cart() {
       totalPrice: Math.round(total),
       deliveryPoint: selectedDeliveryPoint,
       deliveryCharge: deliveryCharge,
+      deliveryDate: deliveryDate,
       transactionId: orderId,
     };
 
@@ -245,7 +280,7 @@ export default function Cart() {
       console.log("Order placed successfully, ID:", orderId);
 
       // Show slider-style payment instructions
-      const steps = getSliderSteps(orderId, total, selectedPoint);
+      const steps = getSliderSteps(orderId, total, selectedPoint, deliveryDate);
       let currentStep = 0;
 
       const showStep = (stepIndex) => {
@@ -333,7 +368,8 @@ export default function Cart() {
                   <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <p class="text-xs text-blue-700">
                       <strong>UPI Number:</strong> <span class="font-mono">${WHATSAPP_NUMBER}</span><br>
-                      <strong>Amount:</strong> <span class="text-green-600">₹${total}</span>
+                      <strong>Amount:</strong> <span class="text-green-600">₹${total}</span><br>
+                      <strong>Delivery Date:</strong> <span class="text-purple-600">${formatDeliveryDate(deliveryDate)}</span>
                     </p>
                   </div>
                 </div>
@@ -351,7 +387,7 @@ export default function Cart() {
               if (result.isConfirmed) {
                 // Open WhatsApp for sharing screenshot
                 const whatsappMessage = encodeURIComponent(
-                  `Payment Screenshot for Order #${orderId}\n\nCustomer: ${customer.name}\nOrder Amount: ₹${total}\n\nPlease find the payment screenshot attached.`
+                  `Payment Screenshot for Order #${orderId}\n\nCustomer: ${customer.name}\nOrder Amount: ₹${total}\nDelivery Date: ${formatDeliveryDate(deliveryDate)}\n\nPlease find the payment screenshot attached.`
                 );
                 
                 window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`, '_blank');
@@ -389,11 +425,15 @@ export default function Cart() {
                         <p class="text-yellow-700 font-semibold">Remember to complete your payment!</p>
                       </div>
                       <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                        <p class="text-sm text-gray-700"><strong>Payment Details:</strong></p>
+                        <p class="text-sm text-gray-700"><strong>Order Details:</strong></p>
                         <div class="text-left space-y-1 mt-2">
                           <div class="flex justify-between text-xs">
                             <span>Amount:</span>
                             <span class="font-bold">₹${total}</span>
+                          </div>
+                          <div class="flex justify-between text-xs">
+                            <span>Delivery Date:</span>
+                            <span class="font-semibold text-purple-600">${formatDeliveryDate(deliveryDate)}</span>
                           </div>
                           <div class="flex justify-between text-xs">
                             <span>UPI Number:</span>
@@ -426,6 +466,9 @@ export default function Cart() {
               });
               setSelectedDeliveryPoint("");
               setDeliveryCharge(0);
+              // Reset delivery date to today
+              const today = new Date();
+              setDeliveryDate(today.toISOString().split('T')[0]);
             });
           }, 100);
         }
@@ -585,6 +628,32 @@ export default function Cart() {
                       value={customer.email}
                       onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
                     />
+                    
+                    {/* Delivery Date Field */}
+                    <div className="relative">
+                      <label className="block text-xs text-gray-600 mb-1 flex items-center gap-1">
+                        <Calendar size={14} />
+                        Delivery Date *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="date"
+                          className="w-full border border-gray-300 rounded px-3 py-2 placeholder-gray-400 focus:ring-2 focus:ring-orange-400"
+                          value={deliveryDate}
+                          onChange={(e) => setDeliveryDate(e.target.value)}
+                          min={getMinDate()}
+                          max={getMaxDate()}
+                          required
+                        />
+                     
+                      </div>
+                      {deliveryDate && (
+                        <p className="text-xs text-purple-600 mt-1 font-medium">
+                          {formatDeliveryDate(deliveryDate)}
+                        </p>
+                      )}
+                    </div>
+
                     <label className="flex items-center gap-2 text-xs md:col-span-2 text-gray-600">
                       <input
                         type="checkbox"
