@@ -210,6 +210,7 @@ const Products = () => {
     setShowGoogleForm(false);
   };
 
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   return (
     <section
       id="products"
@@ -441,7 +442,7 @@ const Products = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <button 
             onClick={handleOpenGoogleForm}
-            className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-4 rounded-2xl font-bold text-sm md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-1.5"
+            className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-4 rounded-2xl font-bold text-xs md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
           >
             <span>Get Customized Diet Plan</span>
             <ArrowRight size={20} />
@@ -453,28 +454,49 @@ const Products = () => {
       </div>
 
       {/* Product Catalog PDF Section */}
+ <>
       <div className="mt-16 bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl p-6 md:p-10 border-2 border-amber-100 shadow-xl">
         <div className="text-center mb-6">
           <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 mb-2">
             Complete Product Catalog
           </h3>
           <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
-            Want to explore our entire product range? Download our complete catalog with all available products, 
+            Want to explore our entire product range? View our complete catalog with all available products, 
             subscription plans, and detailed nutritional information.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <a href="/PDF_AGS.pdf" target="_blank" rel="noopener noreferrer">
-            <button className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-4 rounded-2xl font-bold text-sm md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-3">
-              <FileText size={20} />
-              <span>Download Product Catalog</span>
-            </button>
-          </a>
+          <button 
+            onClick={() => setIsCatalogOpen(true)}
+            className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-4 rounded-2xl font-bold text-xs md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
+          >
+            <FileText size={20} />
+            <span>View Product Catalog</span>
+          </button>
           <p className="text-xs sm:text-sm text-gray-600">
-            View our complete product offerings
+            Explore our complete product offerings
           </p>
         </div>
       </div>
+
+      {/* Catalog Popup Modal */}
+      {isCatalogOpen && (
+        <div  onClick={() => setIsCatalogOpen(false)} className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-4xl max-h-[90vh] w-full relative">
+            {/* Header */}
+         
+              <img 
+                src="/catelog.jpg" 
+                alt="Product Catalog"
+                className="w-full h-auto rounded shadow-lg"
+              />
+            
+
+         
+          </div>
+        </div>
+      )}
+    </>
     </section>
   );
 };

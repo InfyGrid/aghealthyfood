@@ -341,9 +341,9 @@ const Orders = () => {
           <h1 className="text-2xl font-semibold text-gray-800">Orders</h1>
           <p className="text-gray-500">Manage all customer orders.</p>
         </div>
-        <div className="text-sm text-gray-600">
+        {/* <div className="text-sm text-gray-600">
           Total Orders: <span className="font-bold text-green-600">{orders.length}</span>
-        </div>
+        </div> */}
       </div>
 
       {loading ? (
@@ -423,10 +423,10 @@ const Orders = () => {
                       </span>
 
                       {/* Delivery Point */}
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1">
+                      {/* <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1">
                         {deliveryPoint.icon}
                         {deliveryPoint.name}
-                      </span>
+                      </span> */}
 
                       {/* Delivery Charge */}
                       {order.deliveryCharge > 0 && (
@@ -438,17 +438,7 @@ const Orders = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {/* WhatsApp Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          sendPaymentRequest(order);
-                        }}
-                        className="text-green-500 hover:text-green-600 transition p-1 rounded hover:bg-green-50"
-                        title="Send WhatsApp payment request"
-                      >
-                        <MessageCircle size={18} />
-                      </button>
+                     
 
                       {/* Delete Button */}
                       <button
@@ -648,9 +638,9 @@ const Orders = () => {
                           </div>
                         </div>
 
-                        <div className="text-sm text-gray-500 space-y-1">
+                        <div className="text-xs text-gray-500 space-y-1">
                           <div className="flex items-center gap-1">
-                            <Calendar size={14} />
+                            <Calendar size={14} className="text-green-600"  />
                             <span>Customer since: {formatDate(order.Customer?.createdAt)}</span>
                           </div>
                           <div className="flex items-center gap-1 mt-2">

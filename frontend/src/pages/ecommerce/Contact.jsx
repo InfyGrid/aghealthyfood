@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Phone, Mail, MapPin, MessageCircle, Clock, CheckCircle } from "lucide-react";
+import { Send, Phone, Mail, MapPin, MessageCircle, Clock, CheckCircle, Loader2 } from "lucide-react";
 import Swal from "sweetalert2";
 import axios from "axios"; // <--- Import axios
 import axiosInstance from "../../utils/axiosConfig";
@@ -13,6 +13,7 @@ const Contact = () => {
     message: "",
     wantsOffers: false,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false); // <--- Add loading state
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -32,6 +33,7 @@ const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true); // <--- Start loading
 
     try {
       const response = await axiosInstance.post("/api/customers", formData);
@@ -64,6 +66,8 @@ const Contact = () => {
         confirmButtonColor: "#ef4444",
         confirmButtonText: "OK",
       });
+    } finally {
+      setIsSubmitting(false); // <--- End loading
     }
   };
 
@@ -141,7 +145,16 @@ const Contact = () => {
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
                   Full Name <span className="text-red-500">*</span>
                 </label>
-                <input type="text" name="name" required value={formData.name} onChange={handleChange} placeholder="Enter your full name" className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none text-base transition-all duration-300 bg-gray-50 hover:bg-white" />
+                <input 
+                  type="text" 
+                  name="name" 
+                  required 
+                  value={formData.name} 
+                  onChange={handleChange} 
+                  placeholder="Enter your full name" 
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none text-base transition-all duration-300 bg-gray-50 hover:bg-white" 
+                  disabled={isSubmitting} // <--- Disable during submission
+                />
               </div>
 
               {/* Phone */}
@@ -149,7 +162,17 @@ const Contact = () => {
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
                   Phone Number <span className="text-red-500">*</span>
                 </label>
-                <input type="tel" name="phone" required pattern="\d{10}" value={formData.phone} onChange={handleChange} placeholder="Enter 10-digit phone number" className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none text-base transition-all duration-300 bg-gray-50 hover:bg-white" />
+                <input 
+                  type="tel" 
+                  name="phone" 
+                  required 
+                  pattern="\d{10}" 
+                  value={formData.phone} 
+                  onChange={handleChange} 
+                  placeholder="Enter 10-digit phone number" 
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none text-base transition-all duration-300 bg-gray-50 hover:bg-white" 
+                  disabled={isSubmitting} // <--- Disable during submission
+                />
               </div>
 
               {/* Offers Radio */}
@@ -160,21 +183,39 @@ const Contact = () => {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <label className="flex items-center gap-3 cursor-pointer group">
                     <div className="relative">
-                      <input type="radio" name="offers" checked={formData.wantsOffers === true} onChange={() => handleRadioChange(true)} className="sr-only" />
-                      <div className={`w-5 h-5 rounded-full border-2 transition-all ${formData.wantsOffers === true ? "border-emerald-600 bg-emerald-600" : "border-gray-300 group-hover:border-emerald-400"}`}>
+                      <input 
+                        type="radio" 
+                        name="offers" 
+                        checked={formData.wantsOffers === true} 
+                        onChange={() => handleRadioChange(true)} 
+                        className="sr-only" 
+                        disabled={isSubmitting} // <--- Disable during submission
+                      />
+                      <div className={`w-5 h-5 rounded-full border-2 transition-all ${formData.wantsOffers === true ? "border-emerald-600 bg-emerald-600" : "border-gray-300 group-hover:border-emerald-400"} ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}>
                         {formData.wantsOffers === true && <div className="w-full h-full rounded-full bg-white scale-[0.4]"></div>}
                       </div>
                     </div>
-                    <span className="text-sm md:text-base text-gray-700 font-medium">Yes, I want offers</span>
+                    <span className={`text-sm md:text-base text-gray-700 font-medium ${isSubmitting ? "opacity-50" : ""}`}>
+                      Yes, I want offers
+                    </span>
                   </label>
                   <label className="flex items-center gap-3 cursor-pointer group">
                     <div className="relative">
-                      <input type="radio" name="offers" checked={formData.wantsOffers === false} onChange={() => handleRadioChange(false)} className="sr-only" />
-                      <div className={`w-5 h-5 rounded-full border-2 transition-all ${formData.wantsOffers === false ? "border-emerald-600 bg-emerald-600" : "border-gray-300 group-hover:border-emerald-400"}`}>
+                      <input 
+                        type="radio" 
+                        name="offers" 
+                        checked={formData.wantsOffers === false} 
+                        onChange={() => handleRadioChange(false)} 
+                        className="sr-only" 
+                        disabled={isSubmitting} // <--- Disable during submission
+                      />
+                      <div className={`w-5 h-5 rounded-full border-2 transition-all ${formData.wantsOffers === false ? "border-emerald-600 bg-emerald-600" : "border-gray-300 group-hover:border-emerald-400"} ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}>
                         {formData.wantsOffers === false && <div className="w-full h-full rounded-full bg-white scale-[0.4]"></div>}
                       </div>
                     </div>
-                    <span className="text-sm md:text-base text-gray-700 font-medium">No, thanks</span>
+                    <span className={`text-sm md:text-base text-gray-700 font-medium ${isSubmitting ? "opacity-50" : ""}`}>
+                      No, thanks
+                    </span>
                   </label>
                 </div>
               </div>
@@ -187,7 +228,16 @@ const Contact = () => {
                       Email Address <span className="text-red-500">*</span>
                       <span className="text-xs font-normal text-gray-500 ml-2">(required for offers)</span>
                     </label>
-                    <input type="email" name="email" required={formData.wantsOffers} value={formData.email} onChange={handleChange} placeholder="Enter your email address" className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none text-base transition-all duration-300 bg-gray-50 hover:bg-white" />
+                    <input 
+                      type="email" 
+                      name="email" 
+                      required={formData.wantsOffers} 
+                      value={formData.email} 
+                      onChange={handleChange} 
+                      placeholder="Enter your email address" 
+                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none text-base transition-all duration-300 bg-gray-50 hover:bg-white" 
+                      disabled={isSubmitting} // <--- Disable during submission
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -197,13 +247,38 @@ const Contact = () => {
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
                   Message
                 </label>
-                <textarea name="message" value={formData.message} onChange={handleChange} placeholder="Write your message here..." rows={5} className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none text-base resize-none transition-all duration-300 bg-gray-50 hover:bg-white" />
+                <textarea 
+                  name="message" 
+                  value={formData.message} 
+                  onChange={handleChange} 
+                  placeholder="Write your message here..." 
+                  rows={5} 
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none text-base resize-none transition-all duration-300 bg-gray-50 hover:bg-white" 
+                  disabled={isSubmitting} // <--- Disable during submission
+                />
               </div>
 
-              {/* Submit Button */}
-              <button type="submit" className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-base md:text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-3 active:scale-[0.98]">
-                <Send size={20} />
-                <span>Send Message</span>
+              {/* Submit Button with Loader */}
+              <button 
+                type="submit" 
+                disabled={isSubmitting} // <--- Disable during submission
+                className={`w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-base md:text-lg shadow-lg hover:shadow-xl transform transition-all duration-300 flex items-center justify-center gap-3 active:scale-[0.98] ${
+                  isSubmitting 
+                    ? "opacity-70 cursor-not-allowed hover:scale-100" 
+                    : "hover:scale-[1.02]"
+                }`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    <span>Sending Message...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send size={20} />
+                    <span>Send Message</span>
+                  </>
+                )}
               </button>
             </form>
           </motion.div>

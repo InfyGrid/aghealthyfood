@@ -1,18 +1,37 @@
 import React from "react";
 import { Facebook, Instagram, Mail, MapPin, Phone, Twitter, Youtube } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Smooth scroll to a section (even when navigating from another page)
+  const handleScroll = (id) => {
+    if (location.pathname !== "/") {
+      navigate("/"); // go back to home page
+      // wait a bit for the page to load before scrolling
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) element.scrollIntoView({ behavior: "smooth" });
+      }, 400);
+    } else {
+      const element = document.getElementById(id);
+      if (element) element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   const quickLinks = [
-    { name: "Home", href: "#home" },
-    { name: "Products", href: "#products" },
-    { name: "About Us", href: "#about" },
-    { name: "Contact", href: "#contact" },
+    { name: "Home", href: "home" },
+    { name: "Products", href: "products" },
+    { name: "About Us", href: "about" },
+    { name: "Contact", href: "contact" },
   ];
 
   const socialLinks = [
     { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Instagram, href: "#", label: "Instagram" },
+    { icon: Instagram, href: "https://www.instagram.com/ags_healthy_food/?igsh=MW1qNzBlZjltNGQwdQ%3D%3D#", label: "Instagram" },
     { icon: Twitter, href: "#", label: "Twitter" },
     { icon: Youtube, href: "#", label: "YouTube" },
   ];
@@ -80,13 +99,13 @@ const Footer = () => {
             <ul className="space-y-3">
               {quickLinks.map((link, index) => (
                 <li key={index}>
-                  <a
-                    href={link.href}
-                    className="text-sm md:text-base text-gray-600 hover:text-emerald-600 transition-colors duration-200 flex items-center gap-2 group"
+                  <button
+                    onClick={() => handleScroll(link.href)}
+                    className="text-sm md:text-base text-gray-600 hover:text-emerald-600 transition-colors duration-200 flex items-center gap-2 group w-full text-left"
                   >
                     <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
                     {link.name}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -109,7 +128,7 @@ const Footer = () => {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Phone</p>
-                  <a href="tel:+919876543210" className="text-sm md:text-base text-gray-700 hover:text-emerald-600 transition-colors">
+                  <a href="tel:+919943311192" className="text-sm md:text-base text-gray-700 hover:text-emerald-600 transition-colors">
                     +91 9943311192
                   </a>
                 </div>
@@ -120,7 +139,7 @@ const Footer = () => {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Email</p>
-                  <a href="mailto:support@agshealthyfood.com" className="text-sm md:text-base text-gray-700 hover:text-emerald-600 transition-colors break-all">
+                  <a href="mailto:agshealthyfood@gmail.com" className="text-sm md:text-base text-gray-700 hover:text-emerald-600 transition-colors break-all">
                     agshealthyfood@gmail.com
                   </a>
                 </div>

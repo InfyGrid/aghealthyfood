@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Minus, Plus, Trash2, MapPin, MessageCircle, Upload } from "lucide-react";
+import { Minus, Plus, Trash2, MapPin, MessageCircle, Upload, ChevronLeft, ChevronRight } from "lucide-react";
 import axiosInstance from "../../utils/axiosConfig";
 import Swal from "sweetalert2";
 
@@ -62,6 +62,111 @@ export default function Cart() {
     setSelectedDeliveryPoint(pointId);
     const point = DELIVERY_POINTS.find(p => p.id === pointId);
     setDeliveryCharge(point?.freeDelivery ? 0 : (point?.charge || 0));
+  };
+
+  // Slider steps for the SweetAlert
+  const getSliderSteps = (orderId, total, selectedPoint) => {
+    return [
+      {
+        title: "Order Confirmed!",
+        content: `
+          <div class="text-center space-y-4">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+              <h3 class="font-bold text-green-800 text-xl mb-3">📦 Order Placed Successfully!</h3>
+              <p class="text-green-700">Your order has been received and is being processed.</p>
+            </div>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p class="text-blue-800 font-semibold">Order ID: <span class="font-mono">${orderId}</span></p>
+              <p class="text-blue-800 font-semibold mt-2">Total Amount: <span class="text-green-600">₹${total}</span></p>
+            </div>
+          </div>
+        `
+      },
+      {
+        title: "💳 Payment Method",
+        content: `
+          <div class="space-y-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 class="font-bold text-blue-800 text-lg mb-3">UPI Payment (Any App)</h3>
+              <div class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                  <span class="font-semibold">Amount to Pay:</span>
+                  <span class="font-bold text-green-600">₹${total}</span>
+                </div>
+                <div class="flex justify-between items-start">
+                  <span class="font-semibold">UPI Number:</span>
+                  <span class="font-mono text-blue-600 text-right">${WHATSAPP_NUMBER}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        title: "📱 How to Pay",
+        content: `
+          <div class="space-y-4">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <p class="text-sm text-yellow-800 font-semibold mb-3">Follow these steps:</p>
+              <ol class="text-sm text-yellow-700 space-y-2 list-decimal list-inside">
+                <li>Open <strong>GPay, PhonePe, Paytm</strong></li>
+                <li>Send payment to UPI Number: <strong class="font-mono">${WHATSAPP_NUMBER}</strong></li>
+                <li>Enter amount: <strong>₹${total}</strong></li>
+                <li>Complete the payment</li>
+                <li>Take screenshot of successful payment</li>
+              </ol>
+            </div>
+          </div>
+        `
+      },
+      {
+        title: "📋 Order Summary",
+        content: `
+          <div class="space-y-4">
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h3 class="font-bold text-gray-800 text-lg mb-3">Order Details</h3>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span>Order ID:</span>
+                  <span class="font-mono">${orderId}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Customer Name:</span>
+                  <span>${customer.name}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Delivery Point:</span>
+                  <span>${selectedPoint.name}</span>
+                </div>
+                <div class="border-t pt-2 mt-2">
+                  <div class="flex justify-between font-semibold">
+                    <span>Total Amount:</span>
+                    <span class="text-green-600">₹${total}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        title: "📸 Final Step",
+        content: `
+          <div class="space-y-4">
+            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <h3 class="font-bold text-orange-800 text-lg mb-3">Share Payment Screenshot</h3>
+              <p class="text-sm text-orange-700 mb-3">
+                After successful payment, share the screenshot on WhatsApp for verification.
+              </p>
+              <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p class="text-xs text-green-800 font-semibold">WhatsApp Number:</p>
+                <p class="text-center font-mono text-green-600 text-lg font-bold">${WHATSAPP_NUMBER}</p>
+              </div>
+            </div>
+          </div>
+        `
+      }
+    ];
   };
 
   const placeOrder = async () => {
@@ -139,198 +244,192 @@ export default function Cart() {
 
       console.log("Order placed successfully, ID:", orderId);
 
-      // Format product details for display
-      const productDetails = cartItems.map(item => {
-        const orderType = item.orderType || "singleOrder";
-        const typeLabel = 
-          orderType === "weeklySubscription" ? "Weekly Plan" :
-          orderType === "monthlySubscription" ? "Monthly Plan" : "Single Order";
+      // Show slider-style payment instructions
+      const steps = getSliderSteps(orderId, total, selectedPoint);
+      let currentStep = 0;
+
+      const showStep = (stepIndex) => {
+        const step = steps[stepIndex];
         
-        return `• ${item.productName} (${typeLabel}) - Qty: ${item.quantity} - ₹${item.price}`;
-      }).join('\n');
-
-      // Show comprehensive payment instructions
-await Swal.fire({
-  icon: "success",
-  title: "Order Placed Successfully!",
-  html: `
-    <div class="text-left space-y-4">
-      <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-        <h3 class="font-bold text-green-800 text-lg mb-3">📦 Order Confirmed!</h3>
-        <p class="text-sm text-green-700">Your order has been received and is being processed.</p>
-      </div>
-
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 class="font-bold text-blue-800 text-lg mb-3">💳 Payment Instructions</h3>
-        
-        <div class="space-y-3 text-sm">
-          <div class="flex justify-between">
-            <span class="font-semibold">Payment Method:</span>
-            <span class="text-blue-600">UPI Payment (Any App)</span>
-          </div>
-          
-          <div class="flex justify-between">
-            <span class="font-semibold">Amount to Pay:</span>
-            <span class="font-bold text-green-600">₹${total}</span>
-          </div>
-          
-          <div class="flex justify-between items-start">
-            <span class="font-semibold">UPI ID:</span>
-            <span class="font-mono text-blue-600 text-right">${WHATSAPP_NUMBER}</span>
-          </div>
-
-          <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
-            <p class="text-xs text-yellow-800 font-semibold mb-2">📱 How to Pay:</p>
-            <ol class="text-xs text-yellow-700 space-y-1 list-decimal list-inside">
-              <li>Open <strong>GPay, PhonePe, Paytm</strong> or any UPI app</li>
-              <li>Send payment to UPI ID: <strong class="font-mono">${WHATSAPP_NUMBER}</strong></li>
-              <li>Take screenshot of successful payment</li>
-              <li>Share screenshot on WhatsApp for verification</li>
-            </ol>
-          </div>
-
-          <div class="p-3 bg-purple-50 border border-purple-200 rounded">
-            <p class="text-xs text-purple-800 font-semibold">💡 Supported UPI Apps:</p>
-            <div class="flex justify-around mt-2">
-              <span class="text-xs font-semibold text-purple-700">GPay</span>
-              <span class="text-xs font-semibold text-purple-700">PhonePe</span>
-              <span class="text-xs font-semibold text-purple-700">Paytm</span>
-              <span class="text-xs font-semibold text-purple-700">BHIM</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h3 class="font-bold text-gray-800 text-lg mb-3">📋 Order Summary</h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span>Order ID:</span>
-            <span class="font-mono">${orderId}</span>
-          </div>
-          <div class="flex justify-between">
-            <span>Customer Name:</span>
-            <span>${customer.name}</span>
-          </div>
-          <div class="flex justify-between">
-            <span>Delivery Point:</span>
-            <span>${selectedPoint.name}</span>
-          </div>
-          <div class="border-t pt-2 mt-2">
-            <div class="flex justify-between font-semibold">
-              <span>Total Amount:</span>
-              <span class="text-green-600">₹${total}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
-        <h3 class="font-bold text-orange-800 text-lg mb-3">📸 Share Screenshot on WhatsApp</h3>
-        <p class="text-sm text-orange-700">
-          After payment, please share the screenshot on WhatsApp to 
-          <strong> ${WHATSAPP_NUMBER}</strong> for quick verification and order confirmation.
-        </p>
-      </div>
-    </div>
-  `,
-  showCancelButton: true,
-  confirmButtonText: "Share Screenshot on WhatsApp",
-  cancelButtonText: "I'll Pay Later",
-  confirmButtonColor: "#25D366",
-  cancelButtonColor: "#6b7280",
-  width: 600,
-}).then(async (result) => {
-  if (result.isConfirmed) {
-    // Open WhatsApp for sharing screenshot
-    const whatsappMessage = encodeURIComponent(
-      `Payment Screenshot for Order #${orderId}\n\nCustomer: ${customer.name}\nOrder Amount: ₹${total}\n\nPlease find the payment screenshot attached.`
-    );
-    
-    // Open WhatsApp with pre-filled message
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`, '_blank');
-    
-    // Show instructions for sharing screenshot
-    await Swal.fire({
-      icon: "info",
-      title: "Share Screenshot on WhatsApp",
-      html: `
-        <div class="text-center space-y-3">
-          <div class="bg-green-50 border border-green-200 rounded-lg p-3">
-            <p class="text-sm text-green-700 font-semibold">WhatsApp has been opened!</p>
-          </div>
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p class="text-xs text-blue-700">Please share your payment screenshot with this message:</p>
-            <p class="text-xs font-mono bg-white p-2 rounded border mt-2">
-              Payment Screenshot for Order #${orderId}
-            </p>
-          </div>
-          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <p class="text-xs text-yellow-700">
-              <strong>Steps to share screenshot:</strong><br>
-              1. Take screenshot of successful payment<br>
-              2. Go to WhatsApp chat<br>
-              3. Attach the screenshot<br>
-              4. Send the message
-            </p>
-          </div>
-        </div>
-      `,
-      confirmButtonText: "Got it!",
-      confirmButtonColor: "#25D366",
-    });
-  } else {
-    // User chose to pay later - show reminder
-    await Swal.fire({
-      icon: "info",
-      title: "Payment Pending",
-      html: `
-        <div class="text-center space-y-3">
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p class="text-blue-600 font-semibold">Remember to complete your payment!</p>
-          </div>
-          <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-            <p class="text-sm text-gray-700"><strong>Payment Details:</strong></p>
-            <div class="text-left space-y-1 mt-2">
-              <div class="flex justify-between text-xs">
-                <span>Amount:</span>
-                <span class="font-bold">₹${total}</span>
+        Swal.fire({
+          title: step.title,
+          html: step.content + `
+            <div class="mt-6 flex justify-between items-center">
+              <div class="flex items-center space-x-2">
+                ${steps.map((_, index) => `
+                  <div class="w-2 h-2 rounded-full ${index === stepIndex ? 'bg-green-500' : 'bg-gray-300'}"></div>
+                `).join('')}
               </div>
-              <div class="flex justify-between text-xs">
-                <span>UPI ID:</span>
-                <span class="font-mono">${WHATSAPP_NUMBER}</span>
-              </div>
-              <div class="flex justify-between text-xs">
-                <span>Order ID:</span>
-                <span class="font-mono">${orderId}</span>
+              <div class="flex space-x-2">
+                ${stepIndex > 0 ? `
+                  <button id="prev-btn" class="px-4 py-2 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                    <div class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                      </svg>
+                      Previous
+                    </div>
+                  </button>
+                ` : ''}
+                ${stepIndex < steps.length - 1 ? `
+                  <button id="next-btn" class="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    <div class="flex items-center">
+                      Next
+                      <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                      </svg>
+                    </div>
+                  </button>
+                ` : ''}
               </div>
             </div>
-          </div>
-          <div class="bg-green-50 border border-green-200 rounded-lg p-3">
-            <p class="text-xs text-green-700">
-              After payment, share screenshot on WhatsApp to <strong>${WHATSAPP_NUMBER}</strong>
-            </p>
-          </div>
-        </div>
-      `,
-      confirmButtonColor: "#25D366",
-    });
-  }
-});
+          `,
+          showConfirmButton: false,
+          showCancelButton: false,
+          showCloseButton: false,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          width: 600,
+          didOpen: () => {
+            // Add event listeners for navigation buttons
+            if (stepIndex > 0) {
+              const prevBtn = document.getElementById('prev-btn');
+              prevBtn.addEventListener('click', () => {
+                Swal.close();
+                currentStep = stepIndex - 1;
+                setTimeout(() => showStep(currentStep), 100);
+              });
+            }
 
-      // Clear cart and reset form
-      sessionStorage.removeItem("cartItems");
-      setCartItems([]);
-      setShowCustomerForm(false);
-      setCustomer({
-        name: "",
-        phone: "",
-        email: "",
-        address: "",
-        wantsOffers: false,
-      });
-      setSelectedDeliveryPoint("");
-      setDeliveryCharge(0);
+            if (stepIndex < steps.length - 1) {
+              const nextBtn = document.getElementById('next-btn');
+              nextBtn.addEventListener('click', () => {
+                Swal.close();
+                currentStep = stepIndex + 1;
+                setTimeout(() => showStep(currentStep), 100);
+              });
+            }
+          }
+        });
+      };
+
+      // Show first step
+      showStep(currentStep);
+
+      // After slider completes, show final action buttons
+      const checkForFinalStep = setInterval(() => {
+        if (currentStep === steps.length - 1) {
+          clearInterval(checkForFinalStep);
+          // Wait a bit for the final step to be displayed
+          setTimeout(() => {
+            Swal.fire({
+              title: "Almost Done!",
+              html: `
+                <div class="text-center space-y-4">
+                  <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p class="text-green-700 font-semibold">Your order is confirmed!</p>
+                    <p class="text-sm text-green-600 mt-2">Complete your payment and share the screenshot.</p>
+                  </div>
+                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p class="text-xs text-blue-700">
+                      <strong>UPI Number:</strong> <span class="font-mono">${WHATSAPP_NUMBER}</span><br>
+                      <strong>Amount:</strong> <span class="text-green-600">₹${total}</span>
+                    </p>
+                  </div>
+                </div>
+              `,
+              showCancelButton: true,
+              confirmButtonText: "Share Screenshot on WhatsApp",
+              cancelButtonText: "I'll Pay Later",
+              confirmButtonColor: "#25D366",
+              cancelButtonColor: "#6b7280",
+              showCloseButton: false,
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              width: 500,
+            }).then(async (result) => {
+              if (result.isConfirmed) {
+                // Open WhatsApp for sharing screenshot
+                const whatsappMessage = encodeURIComponent(
+                  `Payment Screenshot for Order #${orderId}\n\nCustomer: ${customer.name}\nOrder Amount: ₹${total}\n\nPlease find the payment screenshot attached.`
+                );
+                
+                window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`, '_blank');
+                
+                await Swal.fire({
+                  icon: "success",
+                  title: "WhatsApp Opened!",
+                  html: `
+                    <div class="text-center space-y-3">
+                      <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <p class="text-sm text-green-700">Please share your payment screenshot in the opened WhatsApp chat.</p>
+                      </div>
+                      <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p class="text-xs text-blue-700">
+                          <strong>Remember to:</strong><br>
+                          1. Attach the payment screenshot<br>
+                          2. Send the message with your order details
+                        </p>
+                      </div>
+                    </div>
+                  `,
+                  confirmButtonText: "Got it!",
+                  confirmButtonColor: "#25D366",
+                  allowOutsideClick: false,
+                  allowEscapeKey: false,
+                });
+              } else {
+                // User chose to pay later
+                await Swal.fire({
+                  icon: "info",
+                  title: "Payment Pending",
+                  html: `
+                    <div class="text-center space-y-3">
+                      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <p class="text-yellow-700 font-semibold">Remember to complete your payment!</p>
+                      </div>
+                      <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <p class="text-sm text-gray-700"><strong>Payment Details:</strong></p>
+                        <div class="text-left space-y-1 mt-2">
+                          <div class="flex justify-between text-xs">
+                            <span>Amount:</span>
+                            <span class="font-bold">₹${total}</span>
+                          </div>
+                          <div class="flex justify-between text-xs">
+                            <span>UPI Number:</span>
+                            <span class="font-mono">${WHATSAPP_NUMBER}</span>
+                          </div>
+                          <div class="flex justify-between text-xs">
+                            <span>Order ID:</span>
+                            <span class="font-mono">${orderId}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  `,
+                  confirmButtonColor: "#25D366",
+                  allowOutsideClick: false,
+                  allowEscapeKey: false,
+                });
+              }
+
+              // Clear cart and reset form after final action
+              sessionStorage.removeItem("cartItems");
+              setCartItems([]);
+              setShowCustomerForm(false);
+              setCustomer({
+                name: "",
+                phone: "",
+                email: "",
+                address: "",
+                wantsOffers: false,
+              });
+              setSelectedDeliveryPoint("");
+              setDeliveryCharge(0);
+            });
+          }, 100);
+        }
+      }, 100);
 
     } catch (err) {
       console.error("Failed to place order:", err);
@@ -560,8 +659,8 @@ await Swal.fire({
                     </h3>
                     <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                       <p className="text-xs text-green-800">
-                        After placing order, you'll receive complete payment instructions.
-                        You'll need to send payment via WhatsApp and upload the screenshot for verification.
+                        After placing order, you'll receive complete payment instructions in a step-by-step guide.
+                        You'll need to send payment via UPI and share the screenshot on WhatsApp for verification.
                       </p>
                     </div>
                   </div>

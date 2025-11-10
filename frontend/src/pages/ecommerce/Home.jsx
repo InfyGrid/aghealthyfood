@@ -26,7 +26,6 @@ export default function Home() {
     
     // If it's a string, try to parse it
     if (typeof availableDay === 'string') {
-      console.log("Raw availableDay string:", availableDay);
       
       // Method 1: Handle the specific malformed format: {"Saturday","Sunday","Monday"}
       if (availableDay.startsWith('{') && availableDay.endsWith('}')) {
@@ -37,7 +36,6 @@ export default function Home() {
           const days = withoutBraces.split(',').map(day => 
             day.replace(/"/g, '').trim()
           ).filter(day => day);
-          console.log("Parsed days (method 1):", days);
           return days;
         } catch (error) {
           console.error('Error parsing with method 1:', error);
@@ -48,7 +46,6 @@ export default function Home() {
       try {
         const parsed = JSON.parse(availableDay);
         if (Array.isArray(parsed)) {
-          console.log("Parsed days (method 2 - JSON):", parsed);
           return parsed;
         }
       } catch (error) {
@@ -60,7 +57,6 @@ export default function Home() {
         const days = availableDay.split(',').map(day => 
           day.replace(/[{"}]/g, '').trim()
         ).filter(day => day);
-        console.log("Parsed days (method 3 - split):", days);
         return days;
       } catch (error) {
         console.error('Error parsing with method 3:', error);
@@ -79,29 +75,20 @@ export default function Home() {
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products`);
         const data = await res.json();
 
-        console.log("=== DEBUG INFO ===");
-        console.log("Today is:", today);
-        console.log("All products:", data);
 
         // Filter products that have today in their availableDay array
         let availableProducts = data.filter((product) => {
           const availableDays = parseAvailableDay(product.availableDay);
-          console.log(`Product: ${product.productName}`);
-          console.log(`Raw availableDay: ${product.availableDay}`);
-          console.log(`Parsed days:`, availableDays);
           
           // Check if today is in the availableDay array (case insensitive)
           const isAvailableToday = availableDays.some(
             day => day.trim().toLowerCase() === today.toLowerCase()
           );
-          
-          console.log(`Available today? ${isAvailableToday}`);
-          console.log('---');
+        
           
           return isAvailableToday;
         });
 
-        console.log("Available products after day filter:", availableProducts);
 
         // Filter by time slot if needed
         if (isMorning || isEvening) {
@@ -112,10 +99,8 @@ export default function Home() {
             if (isEvening) return time.includes("evening");
             return true;
           });
-          console.log("Available products after time filter:", availableProducts);
         }
 
-        console.log("Final available products:", availableProducts);
 
         // Take only top 4 for the slider
         setTodaysSpecial(availableProducts.slice(0, 4));
