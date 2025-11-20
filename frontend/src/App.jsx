@@ -29,6 +29,9 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="cart" element={<Cart />} /> {/* ✅ new route */}
           <Route path="/terms" element={<Terms />} />
+           <Route path="/privacy" element={<Privacy />} />
+           <Route path="/shipping" element={<Shipping />} />
+           <Route path="/refund" element={<Refund />} />
         </Route>
 
         {/* Login */}
