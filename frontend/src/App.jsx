@@ -13,6 +13,9 @@ import Customers from "./pages/admin/Customers";
 import Orders from "./pages/admin/Orders";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Terms from "./pages/ecommerce/Terms";
+import Refund from "./pages/ecommerce/Refund";
+import Privacy from "./pages/ecommerce/Privacy";
+import Shipping from "./pages/ecommerce/Shipping";
 
 function App() {
   return (
