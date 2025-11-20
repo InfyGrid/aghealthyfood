@@ -183,10 +183,10 @@ const Footer = () => {
               </a>
             </p>
             <div className="flex gap-6 text-sm text-gray-600">
-              <a href="/p" className="hover:text-emerald-600 transition-colors">Privacy Policy</a>
+              <a href="/privacy" className="hover:text-emerald-600 transition-colors">Privacy Policy</a>
               <a href="/terms"  className="hover:text-emerald-600 transition-colors">Terms & Conditions</a>
-               <a href="/terms"  className="hover:text-emerald-600 transition-colors">Terms & Conditions</a>
-               <a href="/terms"  className="hover:text-emerald-600 transition-colors">Terms & Conditions</a>
+               <a href="/shipping"  className="hover:text-emerald-600 transition-colors">Shipping Policy</a>
+               <a href="/refund"  className="hover:text-emerald-600 transition-colors">Refund Policy</a>
               
             </div>
           </div>
