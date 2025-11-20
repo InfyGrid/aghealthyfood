@@ -12,6 +12,7 @@ import Product from "./pages/admin/Products";
 import Customers from "./pages/admin/Customers";
 import Orders from "./pages/admin/Orders";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Terms from "./pages/ecommerce/Terms";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="contact" element={<Contact />} />
           <Route path="products" element={<Products />} />
           <Route path="cart" element={<Cart />} /> {/* ✅ new route */}
+          <Route path="/terms" element={<Terms />} />
         </Route>
 
         {/* Login */}
