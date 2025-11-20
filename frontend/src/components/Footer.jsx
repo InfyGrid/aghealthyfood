@@ -109,6 +109,8 @@ const Footer = () => {
                 </li>
               ))}
             </ul>
+            <a href="/terms">Terms & Conditions</a>
+
           </motion.div>
 
           {/* Contact Info */}
