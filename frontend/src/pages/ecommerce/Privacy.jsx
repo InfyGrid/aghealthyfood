@@ -1,10 +1,12 @@
-import React from "react";
-
 export default function PrivacyPolicy() {
   return (
     <div className="max-w-3xl mx-auto p-6 text-gray-800">
       <h1 className="text-3xl font-bold mb-4">Privacy Policy</h1>
-      <p className="mb-4">This Privacy Policy outlines how Ag's Healthy Foods ("we", "our", "us") collects, uses, stores, and protects your information when you access or use our website <strong>https://aghealthyfood-vz17.onrender.com</strong> ("Platform").</p>
+      <p className="mb-4">
+        This Privacy Policy outlines how Ag's Healthy Foods ("we", "our", "us") collects, uses,
+        stores, and protects your information when you access or use our website{" "}
+        <strong>https://aghealthyfood-vz17.onrender.com</strong> ("Platform").
+      </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-2">1. Information We Collect</h2>
       <p className="mb-2">We may collect the following types of information:</p>
@@ -31,10 +33,17 @@ export default function PrivacyPolicy() {
       </ul>
 
       <h2 className="text-2xl font-semibold mt-6 mb-2">4. Cookies</h2>
-      <p className="mb-4">We use cookies to enhance user experience, analyze website traffic, and improve our services. You may disable cookies in your browser settings, but certain features may not work properly.</p>
+      <p className="mb-4">
+        We use cookies to enhance user experience, analyze website traffic, and improve our
+        services. You may disable cookies in your browser settings, but certain features may not
+        work properly.
+      </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-2">5. Data Security</h2>
-      <p className="mb-4">We use industry-standard security measures to protect your data against unauthorized access, modification, or disclosure. However, no online transmission is 100% secure.</p>
+      <p className="mb-4">
+        We use industry-standard security measures to protect your data against unauthorized
+        access, modification, or disclosure. However, no online transmission is 100% secure.
+      </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-2">6. Your Rights</h2>
       <ul className="list-disc pl-6 space-y-1">
@@ -44,14 +53,24 @@ export default function PrivacyPolicy() {
       </ul>
 
       <h2 className="text-2xl font-semibold mt-6 mb-2">7. Third-Party Links</h2>
-      <p className="mb-4">Our Platform may contain links to third-party websites. We are not responsible for their privacy practices.</p>
+      <p className="mb-4">
+        Our Platform may contain links to third-party websites. We are not responsible for their
+        privacy practices.
+      </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-2">8. Updates to This Policy</h2>
-      <p className="mb-4">We may update this Privacy Policy periodically. Continued use of the Platform after updates indicates acceptance of the revised policy.</p>
+      <p className="mb-4">
+        We may update this Privacy Policy periodically. Continued use of the Platform after updates
+        indicates acceptance of the revised policy.
+      </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-2">9. Contact Us</h2>
       <p className="mb-4">For any questions or concerns, contact us at:</p>
-      <p className="font-medium">Ag's Healthy Foods<br/>440 Mahalakshmi Nagar South, Palpannaicherry,<br/>Nagapattinam - 611001</p>
+      <p className="font-medium">
+        Ag's Healthy Foods <br />
+        440 Mahalakshmi Nagar South, <br />
+        Palpannaicherry, Nagapattinam - 611001
+      </p>
     </div>
   );
 }
